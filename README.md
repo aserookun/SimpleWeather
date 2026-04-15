@@ -61,7 +61,7 @@ SimpleWeather/
 ### GET `/`
 Serves the main HTML page.
 
-### POST `/api/weather`
+### POST `/api/simpleweather`
 Fetches weather data for a given city.
 
 **Request Body:**

@@ -36,7 +36,7 @@ WEATHER_ICONS = {
 def index():
     return send_file('static/index.html')
 
-@app.route('/api/weather', methods=['POST'])
+@app.route('/api/simpleweather', methods=['POST'])
 def get_weather():
     try:
         data = request.get_json()
