@@ -25,8 +25,8 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             overflow: hidden;
-            width: 400px;
-            max-width: 90vw;
+            /* width: 400px; */
+            max-width: 80vw;
         }
 
         .header {
@@ -188,6 +188,100 @@
             background: #0f1225;
             border-top: 1px solid #2a2f4a;
         }
+
+        .forecast-section {
+            padding: 20px;
+            background: #1a1f3a;
+            border-top: 1px solid #2a2f4a;
+        }
+
+        .forecast-label {
+            font-size: 0.95em;
+            color: #888;
+            margin-bottom: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .forecast-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .forecast-card {
+            background: #242a45;
+            border: 1px solid #2a2f4a;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .forecast-card:hover {
+            border-color: #3a4570;
+            background: #2a3050;
+        }
+
+        .forecast-date {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .forecast-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .forecast-temps {
+            font-size: 0.9em;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .forecast-temp-max {
+            color: #ff9999;
+        }
+
+        .forecast-temp-min {
+            color: #99bbff;
+        }
+
+        .forecast-detail {
+            font-size: 0.75em;
+            color: #888;
+            padding: 4px 0;
+        }
+
+        /* Mobile responsive: 3 columns on tablets, stack on small phones */
+        @media (max-width: 768px) {
+            .forecast-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .forecast-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .forecast-card {
+                padding: 10px;
+            }
+
+            .forecast-icon {
+                font-size: 1.5em;
+                margin-bottom: 6px;
+            }
+
+            .forecast-temps {
+                font-size: 0.85em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -228,6 +322,13 @@
                 <div class="detail-row">
                     <span class="detail-label">Wind Speed</span>
                     <span class="detail-value" id="windSpeed">-- km/h</span>
+                </div>
+            </div>
+
+            <div class="forecast-section" id="forecastSection">
+                <div class="forecast-label">5-Day Forecast</div>
+                <div class="forecast-container" id="forecastContainer">
+                    <!-- Forecast cards will be inserted here by JavaScript -->
                 </div>
             </div>
         </div>
@@ -289,6 +390,14 @@
                 document.getElementById('windSpeed').textContent = `${data.wind_speed} km/h`;
                 document.getElementById('weatherIcon').textContent = data.icon;
 
+                // Display forecast if available
+                if (data.forecast && data.forecast.length > 0) {
+                    displayForecast(data.forecast);
+                    document.getElementById('forecastSection').style.display = 'block';
+                } else {
+                    document.getElementById('forecastSection').style.display = 'none';
+                }
+
                 loading.classList.remove('show');
                 weatherResult.classList.add('show');
 
@@ -306,6 +415,39 @@
         function hideError() {
             errorDiv.classList.remove('show');
             errorDiv.textContent = '';
+        }
+
+        function formatForecastDate(dateStr) {
+            // dateStr format: "2026-04-15"
+            const date = new Date(dateStr + 'T00:00:00');
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function displayForecast(forecast) {
+            const container = document.getElementById('forecastContainer');
+            container.innerHTML = ''; // Clear previous forecast
+
+            forecast.forEach(day => {
+                const card = document.createElement('div');
+                card.className = 'forecast-card';
+                
+                const formattedDate = formatForecastDate(day.date);
+                
+                card.innerHTML = `
+                    <div class="forecast-date">${formattedDate}</div>
+                    <span class="forecast-icon">${day.icon}</span>
+                    <div class="forecast-temps">
+                        <span class="forecast-temp-max">${day.temp_max}°</span>
+                        <span>·</span>
+                        <span class="forecast-temp-min">${day.temp_min}°</span>
+                    </div>
+                    <div class="forecast-detail">💧 ${day.precipitation_prob}%</div>
+                    <div class="forecast-detail">💨 ${day.wind_speed} km/h</div>
+                `;
+                
+                container.appendChild(card);
+            });
         }
     </script>
 </body>

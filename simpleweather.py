@@ -76,7 +76,11 @@ def get_weather():
             'latitude': latitude,
             'longitude': longitude,
             'current': 'temperature_2m,weather_code,relative_humidity_2m,apparent_temperature,wind_speed_10m',
-            'temperature_unit': 'celsius'
+            'daily': 'temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum,precipitation_probability_max,wind_speed_10m_max',
+            'forecast_days': 5,
+            'timezone': 'auto',
+            'temperature_unit': 'celsius',
+            'wind_speed_unit': 'kmh'
         }
         
         try:
@@ -88,6 +92,29 @@ def get_weather():
         current = weather_data.get('current', {})
         weather_code = current.get('weather_code', 0)
         
+        # Process 5-day forecast
+        daily = weather_data.get('daily', {})
+        forecast = []
+        
+        if daily:
+            times = daily.get('time', [])
+            temps_max = daily.get('temperature_2m_max', [])
+            temps_min = daily.get('temperature_2m_min', [])
+            weather_codes = daily.get('weather_code', [])
+            precip_prob = daily.get('precipitation_probability_max', [])
+            wind_speeds = daily.get('wind_speed_10m_max', [])
+            
+            for i in range(min(5, len(times))):
+                forecast.append({
+                    'date': times[i],
+                    'temp_max': round(temps_max[i], 1),
+                    'temp_min': round(temps_min[i], 1),
+                    'weather_code': weather_codes[i],
+                    'icon': WEATHER_ICONS.get(weather_codes[i], '🌍'),
+                    'precipitation_prob': precip_prob[i] if i < len(precip_prob) else 0,
+                    'wind_speed': round(wind_speeds[i], 1) if i < len(wind_speeds) else 0
+                })
+        
         weather_info = {
             'city': city_name,
             'country': country,
@@ -96,7 +123,8 @@ def get_weather():
             'humidity': current.get('relative_humidity_2m', 0),
             'wind_speed': round(current.get('wind_speed_10m', 0), 1),
             'weather_code': weather_code,
-            'icon': WEATHER_ICONS.get(weather_code, '🌍')
+            'icon': WEATHER_ICONS.get(weather_code, '🌍'),
+            'forecast': forecast
         }
         
         return jsonify(weather_info), 200
